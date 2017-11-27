@@ -17,7 +17,7 @@ if [ -f $TMP_FILE ]; then
 fi
 
 
-coordinates=$(./get_coordinates)
+coordinates=$(/usr/local/screen_capture/get_coordinates)
 
 # capture coordinates
 width=$(echo $coordinates | cut -f1 -dx)

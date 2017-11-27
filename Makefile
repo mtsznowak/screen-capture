@@ -6,8 +6,8 @@ all:
 
 install:
 	test -d $(local_path) || mkdir -p $(local_path)
-	cp get_coordinates $(local_path)
-	cp screen_capture.sh $(bin_path)
+	cp -pv get_coordinates $(local_path)
+	cp -pv screen_capture.sh $(bin_path)
 
 uninstall:
 	rm -r $(local_path)
