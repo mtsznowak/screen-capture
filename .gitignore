@@ -51,4 +51,4 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-gst_coordinates
+get_coordinates
