@@ -4,16 +4,19 @@ FRAMERATE="24/1"
 OUTPUT_DIR=$HOME"/Pictures/"
 FILENAME_PREFIX="screen_capture_"
 EXTENSION=".mp4"
+TMP_FILE="/tmp/screen_capture"
 
-# Encoder preset. Allowed values:
-#  "Profile Baseline"
-#  "Profile High"
-#  "Profile Main"
-#  "Profile YouTube"
-#  "Quality High"
-#  "Quality Low"
-#  "Quality Normal"
-X264_PRESET="Profile Main"  
+# check if already capturing
+if [ -f $TMP_FILE ]; then
+    echo "exiting"
+    echo $GST_PID
+    GST_PID=$(cat $TMP_FILE) 
+    kill -INT $GST_PID
+    rm $TMP_FILE
+    exit
+fi
+
+
 coordinates=$(./get_coordinates)
 
 # capture coordinates
@@ -45,21 +48,13 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
     ! videorate \
     ! videoconvert  \
     ! "video/x-raw,framerate="$FRAMERATE \
-    ! x264enc preset=$X264_PRESET \
+    ! x264enc \
     ! qtmux \
-    ! filesink location=$FILENAME > /dev/null 2>&1 &
+    ! filesink location=$FILENAME > /dev/null 2>&1 &!
 
 GST_PID=$!
+echo "pid:"
+echo $GST_PID
 
-# wait for escape
-while true
-do
-    read -s -n1  key
+echo -n $GST_PID > $TMP_FILE 
 
-    case $key in $'\e') break;;
-    esac
-done
-
-
-# stop recording
-kill -INT $GST_PID
