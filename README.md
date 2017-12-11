@@ -17,6 +17,13 @@ make
 sudo make install
 ```
 
+### Configure i3
+Add the following lines to your i3 config:
+```
+floating_minimum_size 1 x 1
+for_window[title="capture-border"] floating enabled
+```
+
 ## Usage
 Just run `./screen_capture.sh` and select some rectangle area with your mouse.
 To stop capturing run `./screen_capture.sh` script again.
