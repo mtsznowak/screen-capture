@@ -3,10 +3,11 @@ bin_path = /usr/bin
 
 all:
 	gcc get_coordinates.c -lX11 -o get_coordinates
+	gcc draw_line.c -lX11 -o draw_line
 
 install:
 	test -d $(local_path) || mkdir -p $(local_path)
-	cp -pv get_coordinates $(local_path)
+	cp -pv get_coordinates draw_line $(local_path)
 	cp -pv screen_capture.sh $(bin_path)
 
 uninstall:
@@ -14,4 +15,4 @@ uninstall:
 	rm $(bin_path)/screen_capture.sh
 
 clean:
-	rm get_coordinates
+	rm get_coordinates draw_line

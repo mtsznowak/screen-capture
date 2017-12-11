@@ -9,9 +9,10 @@ TMP_FILE="/tmp/screen_capture"
 # check if already capturing
 if [ -f $TMP_FILE ]; then
     echo "exiting"
-    echo $GST_PID
-    GST_PID=$(cat $TMP_FILE) 
-    kill -INT $GST_PID
+    GPID=$(cat $TMP_FILE) 
+    kill -INT -$GPID
+    sleep 1
+    kill -- -$GPID
     rm $TMP_FILE
     exit
 fi
@@ -52,9 +53,13 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
     ! qtmux \
     ! filesink location=$FILENAME > /dev/null 2>&1 &!
 
-GST_PID=$!
-echo "pid:"
-echo $GST_PID
+echo -n $$ > $TMP_FILE 
 
-echo -n $GST_PID > $TMP_FILE 
+draw_border() {
+    /usr/local/screen_capture/draw_line $x_start $y_start $width 1&
+    /usr/local/screen_capture/draw_line $x_start $y_end $width 1&
+    /usr/local/screen_capture/draw_line $x_start $y_start 1 $height&
+    /usr/local/screen_capture/draw_line $x_end $y_start 1 $height& 
+}
 
+draw_border &
