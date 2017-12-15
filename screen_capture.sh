@@ -4,19 +4,26 @@ FRAMERATE="24/1"
 OUTPUT_DIR=$HOME"/Pictures/"
 FILENAME_PREFIX="screen_capture_"
 EXTENSION=".mp4"
-TMP_FILE="/tmp/screen_capture"
+
 
 # check if already capturing
-if [ -f $TMP_FILE ]; then
+GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
+
+if [[ $GPID = *[!\ ]* ]]; then
     echo "exiting"
-    GPID=$(cat $TMP_FILE) 
+    
+    # softly kill the gstreamer process
     kill -INT -$GPID
-    sleep 1
-    kill -- -$GPID
-    rm $TMP_FILE
+
+    # kill processes responsible for drawing borders
+    for pid in $(ps -ef | grep 'line' | awk '/draw_lin/ {print $2}'); do 
+	kill $pid; 
+    done
+    
     exit
 fi
 
+sleep 0.25
 
 coordinates=$(/usr/local/screen_capture/get_coordinates)
 
@@ -53,13 +60,8 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
     ! qtmux \
     ! filesink location=$FILENAME > /dev/null 2>&1 &!
 
-echo -n $$ > $TMP_FILE 
 
-draw_border() {
-    /usr/local/screen_capture/draw_line $x_start $y_start $width 1&
-    /usr/local/screen_capture/draw_line $x_start $y_end $width 1&
-    /usr/local/screen_capture/draw_line $x_start $y_start 1 $height&
-    /usr/local/screen_capture/draw_line $x_end $y_start 1 $height& 
-}
-
-draw_border &
+/usr/local/screen_capture/draw_line $x_start $y_start $width 1&
+/usr/local/screen_capture/draw_line $x_start $y_end $width 1&
+/usr/local/screen_capture/draw_line $x_start $y_start 1 $height&
+/usr/local/screen_capture/draw_line $x_end $y_start 1 $height& 
