@@ -50,10 +50,10 @@ do
     file_index=$(($file_index+1))
 done
 
-TARGET_OUTPUT_PATH=${OUTPUT_DIR}/${FREE_FILENAME}
+OUTPUT_PATH=${OUTPUT_DIR}/${FREE_FILENAME}
 
 echo "Started recording to:"
-echo $TARGET_OUTPUT_PATH
+echo $OUTPUT_PATH
 
 popd
 
@@ -64,7 +64,7 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
     ! "video/x-raw,framerate="$FRAMERATE \
     ! x264enc \
     ! qtmux \
-    ! filesink location=$TARGET_OUTPUT_PATH > /dev/null 2>&1 &!
+    ! filesink location=$OUTPUT_PATH > /dev/null 2>&1 &!
 
 
 # Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
@@ -78,10 +78,8 @@ pkill -f --signal 2 gst-launch
 # Interrupt all processes responsible for drawing borders.
 pkill -f --signal=SIGKILL draw_line
 
-# This glitches out sometimes, to kill it as well.
+# This glitches out sometimes, so kill it as well.
 pkill -f --signal=SIGKILL get_coordinates
-
-GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1)
 
 echo "Finished interruption."
 
@@ -89,7 +87,7 @@ ON_OUTPUT_CALLBACK=$2
 
 if [[ ! -z $ON_OUTPUT_CALLBACK ]]
 then
-	CALLBACK_COMMAND="$ON_OUTPUT_CALLBACK$TARGET_OUTPUT_PATH"
+	CALLBACK_COMMAND="$ON_OUTPUT_CALLBACK$OUTPUT_PATH"
 	echo "Callback was passed. Running:"
 
 	echo $CALLBACK_COMMAND
