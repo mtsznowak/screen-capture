@@ -42,19 +42,20 @@ x_end=$((x_start + width))
 y_end=$((y_start + height))
 
 
-# find first available filename
+# Find the first available path within the output directory.
 file_index=0
 
 while true
 do
-	FILENAME=${OUTPUT_DIR}/${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
-    if [ ! -f $FILENAME ]; then
+	FREE_OUTPUT_PATH=${OUTPUT_DIR}/${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
+    if [ ! -f $FREE_OUTPUT_PATH ]; then
 	break
     fi
     file_index=$(($file_index+1))
 done
 
-echo "recording to "$FILENAME
+echo "Started recording to:"
+echo $FREE_OUTPUT_PATH
 
 # start recording
 gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
@@ -63,7 +64,7 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
     ! "video/x-raw,framerate="$FRAMERATE \
     ! x264enc \
     ! qtmux \
-    ! filesink location=$FILENAME > /dev/null 2>&1 &!
+    ! filesink location=$FREE_OUTPUT_PATH > /dev/null 2>&1 &!
 
 
 /usr/local/screen_capture/draw_line $x_start $y_start $width 1&
