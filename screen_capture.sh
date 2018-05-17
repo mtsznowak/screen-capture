@@ -67,12 +67,8 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
     ! filesink location=$TARGET_OUTPUT_PATH > /dev/null 2>&1 &!
 
 
-/usr/local/screen_capture/draw_line $x_start $y_start $width 1&
-/usr/local/screen_capture/draw_line $x_start $y_end $width 1&
-/usr/local/screen_capture/draw_line $x_start $y_start 1 $height&
-
 # Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
-/usr/local/screen_capture/draw_line $x_end $y_start 1 $height
+/usr/local/screen_capture/draw_line $x_start $y_start $width $height
 
 echo "Interrupt received. Saving the recording."
 
