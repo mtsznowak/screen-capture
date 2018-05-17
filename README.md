@@ -1,11 +1,11 @@
 # Screen-Capture
 
-Simple script for screen capturing based on GStreamer.
-Designed to work on Arch Linux with [i3 window manager](https://i3wm.org/).
-It should work also on other X environments, but it was not tested.
+Simple script for screen capturing based on GStreamer.  
+Designed to work on Arch Linux with [i3 window manager](https://i3wm.org/).  
+It should work also on other X environments, but it was not tested.  
 
 Supported output formats:
-- ``mp4`` with audio
+- ``mp4`` (records audio as well!)
 - ``gif`` via [gifski](https://gif.ski/)
 
 ## Installation
