@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 FRAMERATE="24/1"
-OUTPUT_DIR=$HOME"/Pictures/"
-FILENAME_PREFIX="screen_capture_"
-EXTENSION=".mp4"
+OUTPUT_DIR=$HOME"/Pictures"
+FILENAME_PREFIX="screen_capture"
+EXTENSION="mp4"
 
 
 # check if already capturing
@@ -42,7 +42,7 @@ file_index=0
 
 while true
 do
-    FILENAME=$OUTPUT_DIR$FILENAME_PREFIX$file_index$EXTENSION
+	FILENAME=${OUTPUT_DIR}/${FILENAME_PREFIX}_${file_index}.$EXTENSION
     if [ ! -f $FILENAME ]; then
 	break
     fi
