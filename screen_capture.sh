@@ -38,7 +38,7 @@ y_end=$((y_start + height))
 
 # Find the first available filename within the output directory.
 
-cd $OUTPUT_DIR
+pushd $OUTPUT_DIR
 file_index=0
 
 while true
