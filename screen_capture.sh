@@ -2,15 +2,20 @@
 
 FRAMERATE="24/1"
 OUTPUT_DIR=$HOME"/Pictures"
-FILENAME_PREFIX="screen_capture"
-EXTENSION="mp4"
+OUTPUT_FILENAME_PREFFIX="screen_capture"
+EXTENSION=$1
 
+if [[ -z $EXTENSION ]]
+then
+	echo "Usage: screen_capture.sh mp4|gif on_output_file"
+	exit
+fi
 
 # check if already capturing
 GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
 
 if [[ $GPID = *[!\ ]* ]]; then
-    echo "exiting"
+    echo "Process already running."
     
     # softly kill the gstreamer process
     kill -INT -$GPID
@@ -42,7 +47,7 @@ file_index=0
 
 while true
 do
-	FILENAME=${OUTPUT_DIR}/${FILENAME_PREFIX}_${file_index}.$EXTENSION
+	FILENAME=${OUTPUT_DIR}/${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
     if [ ! -f $FILENAME ]; then
 	break
     fi
