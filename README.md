@@ -37,7 +37,31 @@ for_window[title="capture-border"] floating enabled
 
 ## Usage
 
-After installation, run `screen_capture.sh` and select some rectangle area with your mouse.
-To finish capturing and save the result, just run `screen_capture.sh` again - the script will detect that its instance is running already.
+```
+screen_capture.sh mp4|gif on_output_file
+```
 
-By default, the output videos are saved in ``$HOME/Pictures``.
+The first argument specifies the output extension.
+The second argument specifies a script to be run on the output file when the recording has completed successfully.
+Usually, you'll want to do something with the file right away, e.g. copy it to clipboard, copy just its path to clipboard, upload to imgur, etc.
+
+The script will grab the mouse pointer so that you can select the screen region you wish to record.
+To finish capturing and save the result, just run `screen_capture.sh` again with the same arguments or with none at all.  
+The arguments passed to ``screen_capture.sh`` matter only for the invocation which **starts** the recording.
+On the second run, the script will detect that another instance is running already and signal it to complete.
+
+The output videos are saved in ``$HOME/Pictures``.
+
+### Example configurations
+
+Save to mp4 and play the result right away, in [mpv](https://github.com/mpv-player/mpv):
+
+```
+bindsym $mod+shift+r exec screen_capture.sh mp4 "mpv "
+```
+
+Save to mp4 and right away highlight the result in [ranger](https://github.com/ranger/ranger):
+
+```
+bindsym Shift+Print exec screen_capture.sh mp4 "alacritty -e ranger --selectfile="
+```
