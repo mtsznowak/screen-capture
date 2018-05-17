@@ -11,20 +11,14 @@ then
 	exit
 fi
 
-# check if already capturing
+# Check if we are already capturing.
 GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
 
 if [[ $GPID = *[!\ ]* ]]; then
     echo "Process already running."
     
-    # softly kill the gstreamer process
-    kill -INT -$GPID
-
-    # kill processes responsible for drawing borders
-    for pid in $(ps -ef | grep 'line' | awk '/draw_lin/ {print $2}'); do 
-	kill $pid; 
-    done
-    
+	# Interrupt draw_line so that the first process is unblocked and completes.
+	pkill -f --signal 2 draw_line
     exit
 fi
 
@@ -76,4 +70,34 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
 /usr/local/screen_capture/draw_line $x_start $y_start $width 1&
 /usr/local/screen_capture/draw_line $x_start $y_end $width 1&
 /usr/local/screen_capture/draw_line $x_start $y_start 1 $height&
-/usr/local/screen_capture/draw_line $x_end $y_start 1 $height& 
+
+# Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
+/usr/local/screen_capture/draw_line $x_end $y_start 1 $height
+
+echo "Interrupt received. Saving the recording."
+
+# Interrupt the GStreamer process.
+pkill -f --signal 2 gst-launch
+
+# Interrupt all processes responsible for drawing borders.
+pkill -f --signal=SIGKILL draw_line
+
+# This glitches out sometimes, to kill it as well.
+pkill -f --signal=SIGKILL get_coordinates
+
+GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1)
+
+echo "Finished interruption."
+
+ON_OUTPUT_CALLBACK=$2
+
+if [[ ! -z $ON_OUTPUT_CALLBACK ]]
+then
+	CALLBACK_COMMAND="$ON_OUTPUT_CALLBACK$TARGET_OUTPUT_PATH"
+	echo "Callback was passed. Running:"
+
+	echo $CALLBACK_COMMAND
+	eval $CALLBACK_COMMAND
+
+	exit
+fi
