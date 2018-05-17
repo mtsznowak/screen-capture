@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
 
-FRAMERATE="24/1"
-OUTPUT_DIR=$HOME"/Pictures"
-OUTPUT_FILENAME_PREFFIX="screen_capture"
-EXTENSION=$1
-
-if [[ -z $EXTENSION ]]
-then
-	echo "Usage: screen_capture.sh mp4|gif on_output_file"
-	exit
-fi
-
 # Check if we are already capturing.
 GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
 
@@ -20,6 +9,17 @@ if [[ $GPID = *[!\ ]* ]]; then
 	# Interrupt draw_line so that the first process is unblocked and completes.
 	pkill -f --signal 2 draw_line
     exit
+fi
+
+FRAMERATE="24/1"
+OUTPUT_DIR=$HOME"/Pictures"
+OUTPUT_FILENAME_PREFFIX="screen_capture"
+EXTENSION=$1
+
+if [[ -z $EXTENSION ]]
+then
+	echo "Usage: screen_capture.sh mp4|gif on_output_file"
+	exit
 fi
 
 sleep 0.25
