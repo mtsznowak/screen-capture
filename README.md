@@ -15,7 +15,8 @@ Tested on:
 
 Run:
 ```
-yaourt -S gstreamer gst-plugins-ugly gst-plugins-good gst-plugins-base gifski
+yaourt -S gstreamer gst-plugins-ugly gst-plugins-good gst-plugins-base
+cargo install gifski
 ``` 
 
 ### Build
