@@ -14,10 +14,16 @@ Tested on:
 ### Get the dependencies
 
 Run:
+
 ```
 yaourt -S gstreamer gst-plugins-ugly gst-plugins-good gst-plugins-base
-cargo install gifski
 ``` 
+
+It is not required, but if you plan to record ``gif`` videos, install [gifski](https://gif.ski/):
+
+```
+cargo install gifski
+```
 
 ### Build
 
@@ -40,7 +46,7 @@ for_window[title="capture-border"] floating enabled
 ## Usage
 
 ```
-screen_capture.sh mp4|gif on_output_file
+screen_capture.sh mp4|gif [on_output_file]
 ```
 
 The first argument specifies the output extension.
@@ -56,6 +62,9 @@ The output videos are saved in ``$HOME/Pictures``.
 
 ### Example configurations
 
+Here are some example bindings for your ``i3/config``.  
+The script is designed so that the same binding can serve **both for initiating and finishing** the capture.  
+
 Save to mp4 and play the result right away, in [mpv](https://github.com/mpv-player/mpv):
 
 ```
@@ -65,5 +74,5 @@ bindsym $mod+shift+r exec screen_capture.sh mp4 "mpv "
 Save to mp4 and right away highlight the result in [ranger](https://github.com/ranger/ranger):
 
 ```
-bindsym Shift+Print exec screen_capture.sh mp4 "alacritty -e ranger --selectfile="
+bindsym Shift+Print exec screen_capture.sh mp4 "$TERM -e ranger --selectfile="
 ```

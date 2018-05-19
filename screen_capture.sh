@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 # Check if we are already capturing.
-GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
+GPID=$(ps -e -o pgrp,comm | awk '/draw_border/ {print $1;}' | head -n1) 
 
 if [[ $GPID = *[!\ ]* ]]; then
     echo "Process already running."
-	# Interrupt gst-launch process
-	pkill -f --signal SIGKILL draw_line
+    
+	# Interrupt gst-launch so that the first process is unblocked and completes.
 	pkill -f --signal SIGINT gst-launch
     exit
 fi
@@ -67,11 +67,10 @@ echo $OUTPUT_PATH
 
 popd
 
-# Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
-/usr/local/screen_capture/draw_line $x_start $y_start $width $height &!
+/usr/local/screen_capture/draw_border $x_start $y_start $width $height &
 
 
-if [ "$EXTENSION" == "mp4audio" ]
+if [ "$EXTENSION" == "mp4" ]
 then
     # start recording
     gst-launch-1.0 -e ximagesrc use-damage=false startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
@@ -109,8 +108,8 @@ fi
 # Interrupt the GStreamer process.
 pkill -f --signal 2 gst-launch
 
-# Interrupt all processes responsible for drawing borders.
-pkill -f --signal=SIGKILL draw_line
+# Kill all processes responsible for drawing borders.
+pkill -f --signal=SIGKILL draw_border
 
 # This glitches out sometimes, so kill it as well.
 pkill -f --signal=SIGKILL get_coordinates
