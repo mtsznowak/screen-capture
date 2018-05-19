@@ -19,11 +19,24 @@ Run:
 yaourt -S gstreamer gst-plugins-ugly gst-plugins-good gst-plugins-base
 ``` 
 
+It is not required, but if you plan to record with audio, install pulseaudio:
+
+```
+yaourt -S pulseaudio 
+```
+
 It is not required, but if you plan to record ``gif`` videos, install [gifski](https://gif.ski/):
 
 ```
-yaourt -S pulseaudio cargo
+yaourt -S cargo
 cargo install gifski
+```
+
+Remember to properly setup ``PATH`` for cargo binaries!  
+For example, in ``~/.zshenv``:
+
+```
+export PATH="$HOME/.cargo/bin:$PATH"
 ```
 
 ### Build
