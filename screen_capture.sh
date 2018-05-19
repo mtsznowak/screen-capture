@@ -106,7 +106,7 @@ fi
 
 
 # Interrupt the GStreamer process.
-pkill -f --signal 2 gst-launch
+pkill -f --signal SIGINT gst-launch
 
 # Kill all processes responsible for drawing borders.
 pkill -f --signal=SIGKILL draw_border
