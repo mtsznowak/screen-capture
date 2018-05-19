@@ -9,6 +9,7 @@
 
 struct xywh {
 	int x, y, width, height;
+	unsigned long color;
 };
 
 int main(int argc, char* argv[]) {
@@ -51,23 +52,43 @@ int main(int argc, char* argv[]) {
       height = screen->height-y-2;
    }
 
-   struct xywh borders[4] = {
+   const unsigned long white = WhitePixel(d, s);
+   const unsigned long black = BlackPixel(d, s);
+
+   struct xywh borders[8] = {
 	   // Top
-	   { x-1, y-1, width + 2, 1 },
+	   { x-1, y-1, width + 2, 1, white },
 	   // Bottom
-	   { x-1, y + height + 1, width + 2, 1 },
+	   { x-1, y + height + 1, width + 2, 1, white },
 	   // Left
-	   { x-1, y, 1, height },
+	   { x-1, y, 1, height + 1, white },
 	   // Right
-	   { x + width + 1, y, 1, height }
+	   { x + width + 1, y - 1, 1, height + 2, white },
+
+	   // Top
+	   { x-2, y-2, width + 4, 1, black },
+	   // Bottom
+	   { x-2, y + height + 2, width + 4, 1, black },
+	   // Left
+	   { x-2, y - 1, 1, height + 2, black },
+	   // Right
+	   { x + width + 2, y - 2, 1, height + 5, black }
    };
 
-   for (int i = 0; i < 4; ++i) {
-	   w = XCreateSimpleWindow(d, RootWindow(d, s), borders[i].x, borders[i].y, borders[i].width, borders[i].height, 0,
-			   BlackPixel(d, s), WhitePixel(d, s));
+   for (int i = 0; i < 8; ++i) {
+	   w = XCreateSimpleWindow(
+		   d, 
+		   RootWindow(d, s),
+		   borders[i].x,
+		   borders[i].y,
+		   borders[i].width,
+		   borders[i].height,
+		   0,
+		   black, 
+		   borders[i].color
+		);
 
 	   XStoreName(d, w, "capture-border");
-
 	   XMapWindow(d, w);
    }
 
