@@ -89,7 +89,7 @@ then
 elif [ "$EXTENSION" == "gif" ]
 then
     TMP_PATH="`mktemp -d`/"
-    PNG_LOCATION=$TMP_PATH"part%d.png"
+    PNG_LOCATION=$TMP_PATH"part%.6d.png"
     PNG_FILES_REGEX=$TMP_PATH"part*.png"
     echo $TMP_PATH
     # start recording
