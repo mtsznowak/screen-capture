@@ -16,10 +16,20 @@ OUTPUT_DIR=$HOME"/Pictures"
 OUTPUT_FILENAME_PREFFIX="screen_capture"
 EXTENSION=$1
 
-if [[ -z $EXTENSION ]]
+AUDIO_DEVICE=`pacmd list-sources | grep name | grep output | cut -d "<" -f2 | cut -d ">" -f1`
+
+
+if [[ $EXTENSION != "mp4" ]] && [[ $EXTENSION != "gif" ]]
 then
-	echo "Usage: screen_capture.sh mp4|gif [on_output_file]"
-	exit
+    echo "Invalid extension"
+    echo "Usage: screen_capture.sh mp4|gif on_output_file"
+    exit 1
+fi
+
+if [[ -z $AUDIO_DEVICE ]]
+then
+   echo "Could not find output audio device or PulseAudio is not available"
+   exit 1
 fi
 
 sleep 0.25
@@ -43,7 +53,7 @@ file_index=0
 
 while true
 do
-	FREE_FILENAME=${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
+    FREE_FILENAME=${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
     if [ ! -f $FREE_FILENAME ]; then
 	break
     fi
@@ -59,16 +69,41 @@ popd
 
 /usr/local/screen_capture/draw_border $x_start $y_start $width $height &
 
-# Start recording and block until interruption arrives.
-gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
-    ! videorate \
-    ! videoconvert  \
-    ! "video/x-raw,framerate="$FRAMERATE \
-    ! x264enc \
-    ! qtmux \
-    ! filesink location=$OUTPUT_PATH
 
-echo "Interrupt received. Saving the recording."
+if [ "$EXTENSION" == "mp4" ]
+then
+    # start recording
+    gst-launch-1.0 -e ximagesrc use-damage=false startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
+	! videorate \
+	! videoconvert  \
+	! "video/x-raw,framerate="$FRAMERATE \
+	! x264enc \
+	! queue2 max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
+	! muxer.video_0 \
+	pulsesrc device=$AUDIO_DEVICE \
+	! queue max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
+	! lamemp3enc \
+	! muxer.audio_0 \
+	mp4mux name=muxer \
+	! filesink location=$OUTPUT_PATH
+elif [ "$EXTENSION" == "gif" ]
+then
+    TMP_PATH="`mktemp -d`/"
+    PNG_LOCATION=$TMP_PATH"part%.6d.png"
+    PNG_FILES_REGEX=$TMP_PATH"part*.png"
+    echo $TMP_PATH
+    # start recording
+    gst-launch-1.0 -e ximagesrc use-damage=false startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
+	! videorate \
+	! videoconvert  \
+	! "video/x-raw,framerate="$FRAMERATE \
+	! pngenc \
+	! multifilesink location=$PNG_LOCATION
+
+    gifski -o $OUTPUT_PATH $PNG_FILES_REGEX  
+    rm -r $TMP_PATH
+fi
+
 
 # Interrupt the GStreamer process.
 pkill -f --signal 2 gst-launch
