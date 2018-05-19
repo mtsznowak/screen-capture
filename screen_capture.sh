@@ -12,7 +12,7 @@ if [[ $GPID = *[!\ ]* ]]; then
 fi
 
 FRAMERATE="24/1"
-OUTPUT_DIR=$HOME"/Pictures"
+OUTPUT_DIR="$HOME/Pictures"
 OUTPUT_FILENAME_PREFFIX="screen_capture"
 EXTENSION=$1
 
@@ -22,7 +22,7 @@ AUDIO_DEVICE=`pacmd list-sources | grep name | grep output | cut -d "<" -f2 | cu
 if [[ $EXTENSION != "mp4" ]] && [[ $EXTENSION != "gif" ]]
 then
     echo "Invalid extension"
-    echo "Usage: screen_capture.sh mp4|gif on_output_file"
+    echo "Usage: screen_capture.sh mp4|gif [on_output_file]"
     exit 1
 fi
 
@@ -48,7 +48,7 @@ y_end=$((y_start + height))
 
 # Find the first available filename within the output directory.
 
-pushd $OUTPUT_DIR
+pushd "$OUTPUT_DIR"
 file_index=0
 
 while true
@@ -60,10 +60,10 @@ do
     file_index=$(($file_index+1))
 done
 
-OUTPUT_PATH=${OUTPUT_DIR}/${FREE_FILENAME}
+OUTPUT_PATH="${OUTPUT_DIR}/${FREE_FILENAME}"
 
 echo "Started recording to:"
-echo $OUTPUT_PATH
+echo "$OUTPUT_PATH"
 
 popd
 
@@ -85,7 +85,7 @@ then
 	! lamemp3enc \
 	! muxer.audio_0 \
 	mp4mux name=muxer \
-	! filesink location=$OUTPUT_PATH
+	! filesink location="$OUTPUT_PATH"
 elif [ "$EXTENSION" == "gif" ]
 then
     TMP_PATH="`mktemp -d`/"
@@ -100,7 +100,7 @@ then
 	! pngenc \
 	! multifilesink location=$PNG_LOCATION
 
-    gifski -o $OUTPUT_PATH $PNG_FILES_REGEX  
+    gifski -o "$OUTPUT_PATH" $PNG_FILES_REGEX  
     rm -r $TMP_PATH
 fi
 
@@ -120,7 +120,7 @@ ON_OUTPUT_CALLBACK=$2
 
 if [[ ! -z $ON_OUTPUT_CALLBACK ]]
 then
-	CALLBACK_COMMAND="$ON_OUTPUT_CALLBACK$OUTPUT_PATH"
+	CALLBACK_COMMAND="$ON_OUTPUT_CALLBACK\"$OUTPUT_PATH\""
 	echo "Callback was passed. Running:"
 
 	echo $CALLBACK_COMMAND
