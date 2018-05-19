@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 # Check if we are already capturing.
-GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
+GPID=$(ps -e -o pgrp,comm | awk '/draw_border/ {print $1;}' | head -n1) 
 
 if [[ $GPID = *[!\ ]* ]]; then
     echo "Process already running."
     
-	# Interrupt draw_line so that the first process is unblocked and completes.
-	pkill -f --signal 2 draw_line
+	# Interrupt draw_border so that the first process is unblocked and completes.
+	pkill -f --signal 2 draw_border
     exit
 fi
 
@@ -68,7 +68,7 @@ gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x
 
 
 # Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
-/usr/local/screen_capture/draw_line $x_start $y_start $width $height
+/usr/local/screen_capture/draw_border $x_start $y_start $width $height
 
 echo "Interrupt received. Saving the recording."
 
@@ -76,7 +76,7 @@ echo "Interrupt received. Saving the recording."
 pkill -f --signal 2 gst-launch
 
 # Interrupt all processes responsible for drawing borders.
-pkill -f --signal=SIGKILL draw_line
+pkill -f --signal=SIGKILL draw_border
 
 # This glitches out sometimes, so kill it as well.
 pkill -f --signal=SIGKILL get_coordinates
