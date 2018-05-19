@@ -22,6 +22,7 @@ yaourt -S gstreamer gst-plugins-ugly gst-plugins-good gst-plugins-base
 It is not required, but if you plan to record ``gif`` videos, install [gifski](https://gif.ski/):
 
 ```
+yaourt -S pulseaudio cargo
 cargo install gifski
 ```
 
