@@ -7,6 +7,10 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
+struct xywh {
+	int x, y, width, height;
+};
+
 int main(int argc, char* argv[]) {
    if(argc != 5) {
       return -1;
@@ -39,7 +43,6 @@ int main(int argc, char* argv[]) {
    width=MAX(width, 1);
    height=MAX(height, 1);
    
-   printf("x: %d y: %d, w: %d, h: %d\n", x, y, width, height);
    if(x+width >= screen->width-1) {
       width = screen->width-x-2;
    }
@@ -48,13 +51,26 @@ int main(int argc, char* argv[]) {
       height = screen->height-y-2;
    }
 
+   struct xywh borders[4] = {
+	   // Top
+	   { x-1, y-1, width + 2, 1 },
+	   // Bottom
+	   { x-1, y + height + 1, width + 2, 1 },
+	   // Left
+	   { x-1, y, 1, height },
+	   // Right
+	   { x + width + 1, y, 1, height }
+   };
 
-   w = XCreateSimpleWindow(d, RootWindow(d, s), x, y, width, height, 0,
-                           BlackPixel(d, s), WhitePixel(d, s));
+   for (int i = 0; i < 4; ++i) {
+	   w = XCreateSimpleWindow(d, RootWindow(d, s), borders[i].x, borders[i].y, borders[i].width, borders[i].height, 0,
+			   BlackPixel(d, s), WhitePixel(d, s));
 
-   XStoreName(d, w, "capture-border");
+	   XStoreName(d, w, "capture-border");
 
-   XMapWindow(d, w);
+	   XMapWindow(d, w);
+   }
+
    while (1) {
       XNextEvent(d, &e);
    }

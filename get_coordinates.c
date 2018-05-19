@@ -49,11 +49,6 @@ int main(void)
         GrabModeAsync, root, cursor, CurrentTime) != GrabSuccess))
     printf("couldn't grab pointer:");
 
-  if ((XGrabKeyboard
-       (disp, root, False, GrabModeAsync, GrabModeAsync,
-        CurrentTime) != GrabSuccess))
-    printf("couldn't grab keyboard:");
-
   // see also: http://stackoverflow.com/questions/19659486/xpending-cycle-is-making-cpu-100
   while (!done) {
     //~ while (!done && XPending(disp)) {

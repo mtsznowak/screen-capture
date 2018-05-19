@@ -1,26 +1,25 @@
 #!/usr/bin/env bash
 
-FRAMERATE="24/1"
-OUTPUT_DIR=$HOME"/Pictures/"
-FILENAME_PREFIX="screen_capture_"
-EXTENSION=".mp4"
-
-
-# check if already capturing
-GPID=$(ps -e -o pgrp,comm | awk '/draw_line/ {print $1;}' | head -n1) 
+# Check if we are already capturing.
+GPID=$(ps -e -o pgrp,comm | awk '/draw_border/ {print $1;}' | head -n1) 
 
 if [[ $GPID = *[!\ ]* ]]; then
-    echo "exiting"
+    echo "Process already running."
     
-    # softly kill the gstreamer process
-    kill -INT -$GPID
-
-    # kill processes responsible for drawing borders
-    for pid in $(ps -ef | grep 'line' | awk '/draw_lin/ {print $2}'); do 
-	kill $pid; 
-    done
-    
+	# Interrupt gst-launch so that the first process is unblocked and completes.
+	pkill -f --signal SIGINT gst-launch
     exit
+fi
+
+FRAMERATE="24/1"
+OUTPUT_DIR=$HOME"/Pictures"
+OUTPUT_FILENAME_PREFFIX="screen_capture"
+EXTENSION=$1
+
+if [[ -z $EXTENSION ]]
+then
+	echo "Usage: screen_capture.sh mp4|gif [on_output_file]"
+	exit
 fi
 
 sleep 0.25
@@ -37,31 +36,60 @@ x_end=$((x_start + width))
 y_end=$((y_start + height))
 
 
-# find first available filename
+# Find the first available filename within the output directory.
+
+pushd $OUTPUT_DIR
 file_index=0
 
 while true
 do
-    FILENAME=$OUTPUT_DIR$FILENAME_PREFIX$file_index$EXTENSION
-    if [ ! -f $FILENAME ]; then
+	FREE_FILENAME=${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
+    if [ ! -f $FREE_FILENAME ]; then
 	break
     fi
     file_index=$(($file_index+1))
 done
 
-echo "recording to "$FILENAME
+OUTPUT_PATH=${OUTPUT_DIR}/${FREE_FILENAME}
 
-# start recording
+echo "Started recording to:"
+echo $OUTPUT_PATH
+
+popd
+
+/usr/local/screen_capture/draw_border $x_start $y_start $width $height &
+
+# Start recording and block until interruption arrives.
 gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
     ! videorate \
     ! videoconvert  \
     ! "video/x-raw,framerate="$FRAMERATE \
     ! x264enc \
     ! qtmux \
-    ! filesink location=$FILENAME > /dev/null 2>&1 &!
+    ! filesink location=$OUTPUT_PATH
 
+echo "Interrupt received. Saving the recording."
 
-/usr/local/screen_capture/draw_line $x_start $y_start $width 1&
-/usr/local/screen_capture/draw_line $x_start $y_end $width 1&
-/usr/local/screen_capture/draw_line $x_start $y_start 1 $height&
-/usr/local/screen_capture/draw_line $x_end $y_start 1 $height& 
+# Interrupt the GStreamer process.
+pkill -f --signal 2 gst-launch
+
+# Kill all processes responsible for drawing borders.
+pkill -f --signal=SIGKILL draw_border
+
+# This glitches out sometimes, so kill it as well.
+pkill -f --signal=SIGKILL get_coordinates
+
+echo "Finished interruption."
+
+ON_OUTPUT_CALLBACK=$2
+
+if [[ ! -z $ON_OUTPUT_CALLBACK ]]
+then
+	CALLBACK_COMMAND="$ON_OUTPUT_CALLBACK$OUTPUT_PATH"
+	echo "Callback was passed. Running:"
+
+	echo $CALLBACK_COMMAND
+	eval $CALLBACK_COMMAND
+
+	exit
+fi
