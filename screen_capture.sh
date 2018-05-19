@@ -16,10 +16,18 @@ OUTPUT_DIR=$HOME"/Pictures"
 OUTPUT_FILENAME_PREFFIX="screen_capture"
 EXTENSION=$1
 
+AUDIO_DEVICE=`pacmd list-sources | grep name | grep output | cut -d "<" -f2 | cut -d ">" -f1`
+
+if [[ -z $AUDIO_DEVICE ]]
+then
+   echo "Could not find output audio device or PulseAudio is not available"
+   exit
+fi
+
 if [[ -z $EXTENSION ]]
 then
-	echo "Usage: screen_capture.sh mp4|gif on_output_file"
-	exit
+    echo "Usage: screen_capture.sh mp4|gif on_output_file"
+    exit
 fi
 
 sleep 0.25
@@ -43,7 +51,7 @@ file_index=0
 
 while true
 do
-	FREE_FILENAME=${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
+    FREE_FILENAME=${OUTPUT_FILENAME_PREFFIX}_${file_index}.$EXTENSION
     if [ ! -f $FREE_FILENAME ]; then
 	break
     fi
@@ -58,13 +66,19 @@ echo $OUTPUT_PATH
 popd
 
 # start recording
-gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
+gst-launch-1.0 -v -e ximagesrc use-damage=false startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
     ! videorate \
     ! videoconvert  \
     ! "video/x-raw,framerate="$FRAMERATE \
     ! x264enc \
-    ! qtmux \
-    ! filesink location=$OUTPUT_PATH > /dev/null 2>&1 &!
+    ! queue2 max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
+    ! muxer.video_0 \
+    pulsesrc device=$AUDIO_DEVICE \
+    ! queue max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
+    ! lamemp3enc \
+    ! muxer.audio_0 \
+    mp4mux name=muxer \
+    ! filesink location=$OUTPUT_PATH 2>&1 &!
 
 
 # Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
