@@ -11,7 +11,7 @@ if [[ $GPID = *[!\ ]* ]]; then
     exit
 fi
 
-FRAMERATE="24/1"
+FRAMERATE="24"
 OUTPUT_DIR="$HOME/Pictures"
 OUTPUT_FILENAME_PREFFIX="screen_capture"
 EXTENSION=$1
@@ -76,13 +76,14 @@ then
     gst-launch-1.0 -e ximagesrc use-damage=false startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
 	! videorate \
 	! videoconvert  \
-	! "video/x-raw,framerate="$FRAMERATE \
-	! x264enc \
+	! "video/x-raw,framerate="$FRAMERATE"/1" \
+	! x264enc intra-refresh=true vbv-buf-capacity=0 qp-min=21 pass=qual quantizer=24 byte-stream=true key-int-max=30 \
 	! queue2 max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
 	! muxer.video_0 \
 	pulsesrc device=$AUDIO_DEVICE \
-	! queue max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
-	! lamemp3enc \
+	! "audio/x-raw,channels=2" \
+	! queue2 max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
+	! opusenc bitrate=256000 \
 	! muxer.audio_0 \
 	mp4mux name=muxer \
 	! filesink location="$OUTPUT_PATH"
@@ -96,12 +97,12 @@ then
     gst-launch-1.0 -e ximagesrc use-damage=false startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
 	! videorate \
 	! videoconvert  \
-	! "video/x-raw,framerate="$FRAMERATE \
+	! "video/x-raw,framerate="$FRAMERATE"/1" \
 	! pngenc \
 	! multifilesink location=$PNG_LOCATION
 
-    gifski -o "$OUTPUT_PATH" $PNG_FILES_REGEX  
-    rm -r $TMP_PATH
+   gifski -o "$OUTPUT_PATH" $PNG_FILES_REGEX --fps $FRAMERATE 
+   rm -r $TMP_PATH
 fi
 
 
