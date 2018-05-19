@@ -8,6 +8,7 @@ Supported output formats:
 
 Tested on:
 - Arch Linux with [i3 window manager](https://i3wm.org/). 
+	- **No compositor required!** You can still click-through the recording area.
 
 ## Installation
 
