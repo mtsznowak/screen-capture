@@ -6,8 +6,8 @@ GPID=$(ps -e -o pgrp,comm | awk '/draw_border/ {print $1;}' | head -n1)
 if [[ $GPID = *[!\ ]* ]]; then
     echo "Process already running."
     
-	# Interrupt draw_border so that the first process is unblocked and completes.
-	pkill -f --signal 2 draw_border
+	# Interrupt gst-launch so that the first process is unblocked and completes.
+	pkill -f --signal SIGINT gst-launch
     exit
 fi
 
@@ -18,7 +18,7 @@ EXTENSION=$1
 
 if [[ -z $EXTENSION ]]
 then
-	echo "Usage: screen_capture.sh mp4|gif on_output_file"
+	echo "Usage: screen_capture.sh mp4|gif [on_output_file]"
 	exit
 fi
 
@@ -57,25 +57,23 @@ echo $OUTPUT_PATH
 
 popd
 
-# start recording
+/usr/local/screen_capture/draw_border $x_start $y_start $width $height &
+
+# Start recording and block until interruption arrives.
 gst-launch-1.0 -e ximagesrc use-damage=0 startx=$x_start starty=$y_start endx=$x_end endy=$y_end \
     ! videorate \
     ! videoconvert  \
     ! "video/x-raw,framerate="$FRAMERATE \
     ! x264enc \
     ! qtmux \
-    ! filesink location=$OUTPUT_PATH > /dev/null 2>&1 &!
-
-
-# Block on the last one. It will be interrupted by the subsequent call to screen_capture.sh
-/usr/local/screen_capture/draw_border $x_start $y_start $width $height
+    ! filesink location=$OUTPUT_PATH
 
 echo "Interrupt received. Saving the recording."
 
 # Interrupt the GStreamer process.
 pkill -f --signal 2 gst-launch
 
-# Interrupt all processes responsible for drawing borders.
+# Kill all processes responsible for drawing borders.
 pkill -f --signal=SIGKILL draw_border
 
 # This glitches out sometimes, so kill it as well.
