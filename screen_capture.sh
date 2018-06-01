@@ -83,7 +83,7 @@ then
 	pulsesrc device=$AUDIO_DEVICE \
 	! "audio/x-raw,channels=2" \
 	! queue2 max-size-bytes=0 max-size-buffers=0 max-size-time=0 \
-	! opusenc bitrate=256000 \
+	! avenc_aac \
 	! muxer.audio_0 \
 	mp4mux name=muxer \
 	! filesink location="$OUTPUT_PATH"
