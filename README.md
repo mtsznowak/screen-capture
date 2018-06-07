@@ -20,10 +20,10 @@ Run:
 yaourt -S gstreamer gst-plugins-ugly gst-plugins-good gst-plugins-base
 ``` 
 
-It is not required, but if you plan to record with audio, install pulseaudio:
+It is not required, but if you plan to record with audio, install pulseaudio and gst-libav:
 
 ```
-yaourt -S pulseaudio 
+yaourt -S pulseaudio gst-libav
 ```
 
 It is not required, but if you plan to record ``gif`` videos, install [gifski](https://gif.ski/):
